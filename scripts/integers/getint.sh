@@ -10,11 +10,12 @@ export SHELLOPTS
 gcmd="goal -d ../../net1/Primary"
 MAIN=$(${gcmd} account list|awk '{ print $3 }'|tail -1)
 
-TEAL_APPROVAL_PROG="../../contracts/booleans.teal"
-TEAL_ESCROW="../../contracts/booleans.teal"
 APP_ID=1
+
+INDEX=7
 
 # create transactions
 ${gcmd} app call -f "$MAIN" \
   --app-id "$APP_ID" \
-  --app-arg "str:sum"
+  --app-arg "str:is_int_odd" \
+  --app-arg "int:$INDEX"

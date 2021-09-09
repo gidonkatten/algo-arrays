@@ -12,10 +12,7 @@ MAIN=$(${gcmd} account list|awk '{ print $3 }'|tail -1)
 
 APP_ID=1
 
-INDEX=4
-
 # create transactions
 ${gcmd} app call -f "$MAIN" \
   --app-id "$APP_ID" \
-  --app-arg "str:get_bool" \
-  --app-arg "int:$INDEX"
+  --app-arg "str:is_sum_odd"

@@ -11,9 +11,9 @@ PYTHON=python3
 gcmd="goal -d ../../net1/Primary"
 MASTER=$(${gcmd} account list|awk '{ print $3 }'|tail -1)
 
-PYTEAL_APPROVAL_PROG="../../contracts/booleans.py"
+PYTEAL_APPROVAL_PROG="../../contracts/integers.py"
 PYTEAL_CLEAR_PROG="../../contracts/clear.py"
-TEAL_APPROVAL_PROG="../../contracts/booleans.teal"
+TEAL_APPROVAL_PROG="../../contracts/integers.teal"
 TEAL_CLEAR_PROG="../../contracts/clear.teal"
 
 # compile PyTeal into TEAL

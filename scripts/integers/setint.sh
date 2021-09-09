@@ -12,10 +12,15 @@ MAIN=$(${gcmd} account list|awk '{ print $3 }'|tail -1)
 
 APP_ID=1
 
-INDEX=4
+INDEX=7
+VALUE=129
 
 # create transactions
 ${gcmd} app call -f "$MAIN" \
   --app-id "$APP_ID" \
-  --app-arg "str:get_bool" \
-  --app-arg "int:$INDEX"
+  --app-arg "str:set_int" \
+  --app-arg "int:$INDEX" \
+  --app-arg "int:$VALUE"
+
+# read global state
+${gcmd} app read --app-id "$APP_ID" --guess-format --global --from "$MAIN"

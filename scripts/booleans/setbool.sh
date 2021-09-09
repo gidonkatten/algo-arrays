@@ -10,11 +10,9 @@ export SHELLOPTS
 gcmd="goal -d ../../net1/Primary"
 MAIN=$(${gcmd} account list|awk '{ print $3 }'|tail -1)
 
-TEAL_APPROVAL_PROG="../../contracts/booleans.teal"
-TEAL_ESCROW="../../contracts/booleans.teal"
-APP_ID=14
+APP_ID=1
 
-INDEX=127
+INDEX=4
 TRUE=1
 FALSE=0
 
