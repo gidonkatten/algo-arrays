@@ -29,11 +29,11 @@ def contract():
         Int(1)
     ])
 
-    # on_get_bool
-    get_bool_index = Btoi(Txn.application_args[1])
-    on_is_int_odd = GetByte(array, get_bool_index) % Int(2)
+    # is_int_odd
+    int_odd_index = Btoi(Txn.application_args[1])
+    on_is_int_odd = GetByte(array, int_odd_index) % Int(2)
 
-    # on_is_sum_even
+    # on_is_sum_odd
     array_stored = ScratchVar(TealType.bytes)
     total = ScratchVar(TealType.uint64)
     i = ScratchVar(TealType.uint64)

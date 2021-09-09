@@ -9,7 +9,7 @@ export SHELLOPTS
 
 PYTHON=python3
 gcmd="goal -d ../../net1/Primary"
-MASTER=$(${gcmd} account list|awk '{ print $3 }'|tail -1)
+MAIN=$(${gcmd} account list|awk '{ print $3 }'|tail -1)
 
 PYTEAL_APPROVAL_PROG="../../contracts/integers.py"
 PYTEAL_CLEAR_PROG="../../contracts/clear.py"
@@ -22,7 +22,7 @@ TEAL_CLEAR_PROG="../../contracts/clear.teal"
 
 # create app
 APP_ID=$(
-  ${gcmd} app create --creator "$MASTER" \
+  ${gcmd} app create --creator "$MAIN" \
     --approval-prog "$TEAL_APPROVAL_PROG" \
     --clear-prog "$TEAL_CLEAR_PROG" \
     --global-byteslices 1 \
@@ -34,5 +34,5 @@ APP_ID=$(
 )
 echo "App ID = $APP_ID"
 
+# read global state
 ${gcmd} app read --app-id "$APP_ID" --guess-format --global --from "$MAIN"
-

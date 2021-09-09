@@ -17,19 +17,18 @@ def contract():
     # on_set_bool
     set_bool_value = Btoi(Txn.application_args[2]) > Int(0)
     set_bool_index = ScratchVar(TealType.uint64)
-    array_slot = set_bool_index.load() / Int(8)
-    index_slot = set_bool_index.load() % Int(8)
-
+    set_bool_array_slot = set_bool_index.load() / Int(8)
+    set_bool_index_slot = set_bool_index.load() % Int(8)
     on_set_bool = Seq([
         set_bool_index.store(Btoi(Txn.application_args[1])),
         App.globalPut(
             Bytes("array"),
             SetByte(
                 array,
-                array_slot,
+                set_bool_array_slot,
                 SetBit(
-                    GetByte(array, array_slot),
-                    index_slot,
+                    GetByte(array, set_bool_array_slot),
+                    set_bool_index_slot,
                     set_bool_value
                 )
             )
@@ -38,8 +37,16 @@ def contract():
     ])
 
     # on_get_bool
-    get_bool_index = Btoi(Txn.application_args[1])
-    on_get_bool = GetBit(array, get_bool_index)
+    get_bool_index = ScratchVar(TealType.uint64)
+    get_bool_array_slot = get_bool_index.load() / Int(8)
+    get_bool_index_slot = get_bool_index.load() % Int(8)
+    on_get_bool = Seq([
+        get_bool_index.store(Btoi(Txn.application_args[1])),
+        GetBit(
+            GetByte(array, get_bool_array_slot),
+            get_bool_index_slot
+        )
+    ])
 
     return Cond(
         [Txn.on_completion() == OnComplete.DeleteApplication, Int(0)],
