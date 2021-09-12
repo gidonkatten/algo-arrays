@@ -1,4 +1,5 @@
 from pyteal import *
+from util import convert_uint_to_bytes
 
 
 # This is an example of an array of booleans using bits
@@ -8,6 +9,7 @@ def contract():
     index = ScratchVar(TealType.uint64)
     shifted_index = ScratchVar(TealType.uint64)
     key = ScratchVar(TealType.uint64)
+    key_as_string = ScratchVar(TealType.bytes)
     byte = ScratchVar(TealType.uint64)
     bit = ScratchVar(TealType.uint64)
 
@@ -28,17 +30,18 @@ def contract():
     )
 
     # The global state value for the given key
-    key_value = App.globalGetEx(Int(0), Itob(key.load()))
+    key_has_value = App.globalGetEx(Int(0), key_as_string.load())
+    key_value = App.globalGet(key_as_string.load())
 
     # passed values
     store_index = index.store(Btoi(Txn.application_args[1]))
-    bool_value = Btoi(Txn.application_args[2]) > 0
+    bool_value = Btoi(Txn.application_args[2]) > Int(0)
 
     # initialise global state value with either 127 or 126 bytes depending on key length
     initialise = If(
-        Not(key_value.hasValue()),
+        Not(key_has_value.hasValue()),
         App.globalPut(
-            Btoi(key.load()),
+            key_as_string.load(),
             If(
                 index.load() < Int(10160),  # if key is 0-9, else key is 10-63
                 Bytes("base16", "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
@@ -50,12 +53,12 @@ def contract():
     # set bool
     on_set_bool = Seq([
         App.globalPut(
-            key_value.value(),
+            key_as_string.load(),
             SetByte(
-                App.globalGet(key_value.value()),
+                key_value,
                 byte.load(),
                 SetBit(
-                    GetByte(App.globalGet(Itob(index.load())), byte.load()),
+                    GetByte(key_value, byte.load()),
                     bit.load(),
                     bool_value
                 )
@@ -67,7 +70,7 @@ def contract():
     # get bool
     on_get_bool = GetBit(
         GetByte(
-            App.globalGet(key_value.value()),
+            App.globalGet(key_value),
             byte.load()
         ),
         bit.load()
@@ -78,7 +81,8 @@ def contract():
         # store values to scratch
         store_index,
         store_key_byte_bit,
-        key_value,
+        key_as_string.store(convert_uint_to_bytes(key.load())),
+        key_has_value,
         # lazy initialise
         initialise,
         Cond(
