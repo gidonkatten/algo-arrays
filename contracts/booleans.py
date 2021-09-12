@@ -14,19 +14,24 @@ def contract():
     bit = ScratchVar(TealType.uint64)
 
     # NOTE: This logic can be optimised for opcode cost but left for readability
-    store_key_byte_bit = If(
-        index.load() < Int(10160),  # if key is 0-9, else key is 10-63
-        Seq([
-            key.store(index.load() / Int(1016)),
-            byte.store((index.load() % Int(1016)) / Int(8)),
-            bit.store((index.load() % Int(1016)) % Int(8))
-        ]),
-        Seq([
-            shifted_index.store(index.load() - Int(10160)),
-            key.store(Int(10) + (shifted_index.load() / Int(1008))),
-            byte.store((index.load() % Int(1008)) / Int(8)),
-            bit.store((index.load() % Int(1008)) % Int(8))
-        ])
+    store_key_byte_bit = Cond(
+        [
+            index.load() < Int(10160),  # key is 0-9
+            Seq([
+                key.store(index.load() / Int(1016)),
+                byte.store((index.load() % Int(1016)) / Int(8)),
+                bit.store((index.load() % Int(1016)) % Int(8))
+            ])
+        ],
+        [
+            index.load() < Int(64592),  # key is 10-63
+            Seq([
+                shifted_index.store(index.load() - Int(10160)),
+                key.store(Int(10) + (shifted_index.load() / Int(1008))),
+                byte.store((shifted_index.load() % Int(1008)) / Int(8)),
+                bit.store((shifted_index.load() % Int(1008)) % Int(8))
+            ])
+        ]
     )
 
     # The global state value for the given key
@@ -42,10 +47,15 @@ def contract():
         Not(key_has_value.hasValue()),
         App.globalPut(
             key_as_string.load(),
-            If(
-                index.load() < Int(10160),  # if key is 0-9, else key is 10-63
-                Bytes("base16", "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
-                Bytes("base16", "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+            Cond(
+                [
+                    index.load() < Int(10160),  # key is 0-9
+                    Bytes("base16", "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
+                ],
+                [
+                    index.load() < Int(64592),  # key is 10-63
+                    Bytes("base16", "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+                ]
             )
         )
     )
@@ -70,7 +80,7 @@ def contract():
     # get bool
     on_get_bool = GetBit(
         GetByte(
-            App.globalGet(key_value),
+            key_value,
             byte.load()
         ),
         bit.load()

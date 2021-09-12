@@ -12,7 +12,7 @@ MAIN=$(${gcmd} account list|awk '{ print $3 }'|tail -1)
 
 APP_ID=1
 
-INDEX=4
+INDEX=64591
 
 # create transactions
 ${gcmd} app call -f "$MAIN" \
