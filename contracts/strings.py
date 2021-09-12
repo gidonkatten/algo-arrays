@@ -19,10 +19,13 @@ def contract():
     ])
 
     # on_set_string
-    set_bool_index = Btoi(Txn.application_args[1])
+    set_string_index = Txn.application_args[1]
     set_string_value = Txn.application_args[2]
+    set_string_array = App.globalGetEx(Int(0), set_string_index)
     on_set_string = Seq([
-        App.globalPut(Itob(set_bool_index), set_string_value),
+        set_string_array,
+        Assert(set_string_array.hasValue()),
+        App.globalPut(set_string_index, set_string_value),
         Int(1)
     ])
 

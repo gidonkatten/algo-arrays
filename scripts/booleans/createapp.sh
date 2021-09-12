@@ -25,7 +25,7 @@ APP_ID=$(
   ${gcmd} app create --creator "$MAIN" \
     --approval-prog "$TEAL_APPROVAL_PROG" \
     --clear-prog "$TEAL_CLEAR_PROG" \
-    --global-byteslices 1 \
+    --global-byteslices 64 \
     --global-ints 0 \
     --local-byteslices 0 \
     --local-ints 0 |
