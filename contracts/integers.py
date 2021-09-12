@@ -33,17 +33,18 @@ def contract():
     int_odd_index = Btoi(Txn.application_args[1])
     on_is_int_odd = GetByte(array, int_odd_index) % Int(2)
 
-    # on_is_sum_odd
+    # on_is_sum_greater
+    is_sum_greater_value = Btoi(Txn.application_args[1])
     array_stored = ScratchVar(TealType.bytes)
     total = ScratchVar(TealType.uint64)
     i = ScratchVar(TealType.uint64)
-    on_is_sum_odd = Seq([
+    on_is_sum_greater = Seq([
         array_stored.store(array),
         total.store(Int(0)),
         For(i.store(Int(0)), i.load() < Int(10), i.store(i.load() + Int(1))).Do(
             total.store(total.load() + GetByte(array_stored.load(), i.load()))
         ),
-        total.load() % Int(2)
+        total.load() > is_sum_greater_value
     ])
 
     return Cond(
@@ -56,7 +57,7 @@ def contract():
         # Must be a NoOp transaction
         [Txn.application_args[0] == Bytes("set_int"), on_set_int],
         [Txn.application_args[0] == Bytes("is_int_odd"), on_is_int_odd],
-        [Txn.application_args[0] == Bytes("is_sum_odd"), on_is_sum_odd]
+        [Txn.application_args[0] == Bytes("is_sum_greater"), on_is_sum_greater]
     )
 
 

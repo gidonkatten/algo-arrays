@@ -29,8 +29,7 @@ APP_ID=$(
     --global-byteslices "$ARRAY_LENGTH" \
     --global-ints 1 \
     --local-byteslices 0 \
-    --local-ints 0 \
-    --app-arg "int:$ARRAY_LENGTH" |
+    --local-ints 0 |
     grep Created |
     awk '{ print $6 }'
 )

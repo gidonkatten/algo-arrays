@@ -1,48 +1,52 @@
 from pyteal import *
+from util import convert_uint_to_bytes
 
 
 # This is an example of an array of strings using keys in global state
 def contract():
 
-    length = ScratchVar(TealType.uint64)
-
     # on_create
-    array_length = Btoi(Txn.application_args[0])
-    i = ScratchVar(TealType.uint64)
     on_create = Seq([
-        length.store(array_length),
-        App.globalPut(Bytes("length"), length.load()),
-        For(i.store(Int(0)), i.load() < length.load(), i.store(i.load() + Int(1))).Do(
-            App.globalPut(Itob(i.load()), Bytes(""))
-        ),
+        App.globalPut(Bytes("length"), Txn.global_num_byte_slices()),
         Int(1)
     ])
 
     # on_set_string
-    set_string_index = Txn.application_args[1]
+    set_string_index = Btoi(Txn.application_args[1])
     set_string_value = Txn.application_args[2]
-    set_string_array = App.globalGetEx(Int(0), set_string_index)
     on_set_string = Seq([
-        set_string_array,
-        Assert(set_string_array.hasValue()),
-        App.globalPut(set_string_index, set_string_value),
+        Assert(set_string_index < App.globalGet(Bytes("length"))),
+        App.globalPut(convert_uint_to_bytes(set_string_index), set_string_value),
         Int(1)
     ])
 
     # on_contains
     searched_string_value = Txn.application_args[1]
-    does_contain = ScratchVar(TealType.uint64)
+    found = ScratchVar(TealType.uint64)
     i = ScratchVar(TealType.uint64)
+    length = ScratchVar(TealType.uint64)
+    key = ScratchVar(TealType.bytes)
+    cmp_string = App.globalGetEx(Int(0), key.load())
     on_contains = Seq([
-        does_contain.store(Int(0)),
-        length.store(array_length),
+        found.store(Int(0)),
+        length.store(App.globalGet(Bytes("length"))),
         For(i.store(Int(0)), i.load() < length.load(), i.store(i.load() + Int(1))).Do(
-            If(App.globalGet(Itob(i.load())) == searched_string_value).Then(Seq([
-                does_contain.store(Int(1)),
-                Break(),
-            ]))
+            Seq([
+                key.store(convert_uint_to_bytes(i.load())),
+                cmp_string,
+                If(
+                    cmp_string.hasValue(),
+                    If(
+                        cmp_string.value() == searched_string_value,
+                        Seq([
+                            found.store(Int(1)),
+                            Break(),
+                        ])
+                    )
+                )
+            ])
         ),
-        does_contain.load()
+        found.load()
     ])
 
     return Cond(
